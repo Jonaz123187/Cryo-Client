@@ -6,8 +6,8 @@ Cryo ist ein unabhängiger Windows-Launcher und Instanz-/Modpack-Manager für **
 
 ## Website und Download
 
-- **[Cryo-Website](https://cryo-client.vividgrass34.chatgpt.site)**
-- **[Windows-Alpha 0.2.3 herunterladen](https://cryo-client.vividgrass34.chatgpt.site/downloads/Cryo-Client-0.2.3-Setup.exe)**
+- **[Cryo-Website](https://cryo-client.pages.dev)**
+- **[Windows-Alpha 0.2.3 herunterladen](https://cryo-client.pages.dev/downloads/Cryo-Client-0.2.3-Setup.exe)**
 
 Die Website zeigt den aktuellen Entwicklungsstand und enthält die SHA-256-Prüfsumme des Installers.
 

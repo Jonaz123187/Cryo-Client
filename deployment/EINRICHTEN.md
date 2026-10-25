@@ -19,6 +19,10 @@ Offizielle Anleitung: https://developers.cloudflare.com/pages/how-to/use-direct-
 
 ## Ein neuer Launcher-Release
 
+Auf dem eingerichteten Entwickler-PC übernimmt `npm run release:publish` nach Build, `release:prepare` und `release:verify` den Upload. Die lokale GitHub CLI muss einmal angemeldet sein. Das Skript erstellt zuerst einen Entwurf, lädt Installer, stabile Downloadkopie, Signatur, Website-Paket, GitHub-Feed und Prüfsummen hoch und veröffentlicht zuletzt. Ein manueller Cloudflare-Upload entfällt.
+
+Alternativ lässt sich der Release im GitHub-Portal anlegen:
+
 1. Neue Launcher-Version lokal bauen und signieren. Der private Signierschlüssel bleibt auf dem Entwickler-PC.
 2. Im Launcher-Projekt release:prepare und release:verify ausführen.
 3. Auf GitHub einen stabilen Release mit Tag vX.Y.Z erstellen.

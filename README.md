@@ -4,6 +4,7 @@ Minecraft-Launcher für Mods und Modpacks. Nivo befindet sich in der Alpha; Mine
 
 - [Website und aktueller Download](https://cryo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
+- [Nivo Client 0.4.1](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.4.1): aufgeräumte Skin-Vorschau und einzelne Schalter für eigene Mods, Ressourcenpakete und Shader.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
@@ -16,7 +17,7 @@ Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt ein
 
 `website/` enthält die aktuelle Website. `deployment/` bereitet signierte Veröffentlichungen aus GitHub Releases für das bestehende Cloudflare-Pages-Projekt vor.
 
-Nach einmaliger Einrichtung der Cloudflare-Verbindung gilt:
+Die Cloudflare-Verbindung ist eingerichtet und wurde mit einer erfolgreichen Veröffentlichung geprüft:
 
 **Signierten Release auf GitHub veröffentlichen → Website, Download und Update-Feed werden automatisch aktualisiert.**
 

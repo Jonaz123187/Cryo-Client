@@ -1,0 +1,74 @@
+name: Publish Nivo website
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - "deployment/**"
+      - ".github/workflows/publish-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nivo-production-website
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name != 'release' || (!github.event.release.prerelease && !github.event.release.draft)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Read trusted website and deployment code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Test deployment validation
+        run: python3 -m unittest discover -s deployment -p 'test_*.py' -v
+
+      - name: Prepare current release and website
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NIVO_RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: python3 deployment/prepare_pages.py --output deployment/out
+
+      - name: Verify installer signature and signed version
+        run: cargo run --locked --manifest-path deployment/signature-check/Cargo.toml -- deployment/out deployment/updater-public.key
+
+      - name: Check Cloudflare connection
+        id: access
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          if [[ -n "$CF_TOKEN" && -n "$CF_ACCOUNT" ]]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Validation passed. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to enable automatic publishing.'
+            echo '### Cloudflare connection pending' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Release and signature checks passed. Add the two Cloudflare repository secrets, then run this workflow again.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Publish to existing Cloudflare Pages project
+        if: steps.access.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.152.0"
+          command: pages deploy deployment/out --project-name=cryo-client --branch=main
+
+      - name: Summarize deployment
+        if: steps.access.outputs.ready == 'true'
+        run: |
+          echo '### Nivo website published' >> "$GITHUB_STEP_SUMMARY"
+          echo 'https://cryo-client.pages.dev/' >> "$GITHUB_STEP_SUMMARY"

@@ -1,53 +1,33 @@
 # Nivo Client
 
-**Deine Welten. Deine Regeln.**
+Minecraft-Launcher für Mods und Modpacks. Nivo befindet sich in der Alpha; Minecraft-Spielstart, automatische Java-/Loader-Installation und der eigene Ingame-Mod werden noch entwickelt.
 
-Cryo ist ein unabhängiger Windows-Launcher und Instanz-/Modpack-Manager für **Minecraft: Java Edition**, aktuell in früher Entwicklung. Dieses Repository ist die öffentliche Projektübersicht.
+- [Website und aktueller Download](https://cryo-client.pages.dev/)
+- [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
+- [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
-## Website und Download
+## Funktionen
 
-- **[Nivo-Website](https://cryo-client.pages.dev)**
-- **[Windows-Alpha 0.2.3 herunterladen](https://cryo-client.pages.dev/downloads/Cryo-Client-0.2.3-Setup.exe)**
+Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials, eigene Instanzbilder, animierter Skin, einstellbares Glasdesign und Discord Rich Presence.
 
-Die Website zeigt den aktuellen Entwicklungsstand und enthält die SHA-256-Prüfsumme des Installers.
+Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt eine gültige Signatur einschließlich Versionsnummer. Die Microsoft-Anmeldung verwendet Systembrowser und PKCE; Refresh-Tokens liegen im Windows Credential Manager. Die Minecraft-App-Freigabe und der vollständige Kontotest stehen noch aus. Die Vorschau erlaubt keinen Minecraft-Spielstart.
 
-## Aktueller Stand
+## Website und Veröffentlichung
 
-**Entwicklungs-Alpha: Der eigentliche Minecraft-Spielstart ist noch nicht implementiert.** Die Version dient zum Kennenlernen der Oberfläche und zum Verwalten von Instanzen und Mods.
+`website/` enthält die aktuelle Website. `deployment/` bereitet signierte Veröffentlichungen aus GitHub Releases für das bestehende Cloudflare-Pages-Projekt vor.
 
-Bereits umgesetzt:
+Nach einmaliger Einrichtung der Cloudflare-Verbindung gilt:
 
-- Instanzen mit eigener Minecraft-Version, Modloader-Auswahl und Modkonfiguration.
-- Versionssuche mit dem offiziellen Minecraft-Versionsmanifest.
-- Mods, Modpacks, Shader und Ressourcenpakete über die offizielle Modrinth-API entdecken.
-- Modrinth-Modpacks importieren und ihre Inhalte verwalten.
-- Optionales **Cryo Essentials** mit Fabric API, Sodium, Iris, Entity Culling, FerriteCore, Mod Menu, Lithium und ImmediatelyFast, soweit kompatibel.
-- Mods mit Prüfsummen herunterladen sowie einzeln aktivieren und deaktivieren.
-- Dunkles Glasdesign mit dem silbernen Cryo-Logo und farbigen Landschaften.
+**Signierten Release auf GitHub veröffentlichen → Website, Download und Update-Feed werden automatisch aktualisiert.**
 
-## Microsoft- und Minecraft-Anmeldung
+Website-Änderungen auf `main` werden ebenfalls automatisch bereitgestellt. Vor dem ersten GitHub Release nutzt die Prüfung die bereits veröffentlichte, fest hinterlegte 0.4.0. Ohne Cloudflare-Secrets werden nur die Prüfungen ausgeführt; es wird keine Veröffentlichung behauptet.
 
-Nivo verwendet seine eigene registrierte Microsoft-App. Die Anmeldung läuft über die offizielle Microsoft-Seite im Standardbrowser mit Authorization Code und PKCE. Cryo fragt nicht nach dem Microsoft-Passwort.
+[Einmalige Einrichtung und Ablauf](deployment/EINRICHTEN.md) · [Veröffentlichungsprüfung](https://github.com/Jonaz123187/Nivo-Client/actions/workflows/publish-website.yml)
 
-Der aktuelle Kontotest erreicht Minecraft Services, wird dort jedoch abgewiesen. Die zusätzliche App-Freigabe beziehungsweise die konkrete Ursache des Zugriffsfehlers ist noch zu klären. Ein vollständig funktionierender Login wird daher noch nicht zugesagt.
-
-Refresh-Tokens werden in der Windows-Anmeldeinformationsverwaltung gespeichert; Zugangstokens werden nicht im normalen Konfigurationsspeicher oder in der Website abgelegt.
-
-## Nächste Entwicklungsschritte
-
-- Minecraft-Services-Zugriff abschließend klären und den vollständigen Kontotest durchführen.
-- Minecraft-Spielstart sowie automatische Verwaltung von Java und Modloadern.
-- Eigener Ingame-Mod und weitere Client-Funktionen.
+Der private Signierschlüssel bleibt auf dem Entwickler-PC. Dieser öffentliche Quellstand enthält Website und Veröffentlichungswerkzeuge; keine persönlichen Kontodaten, privaten Schlüssel oder Launcher-Entwicklungsordner.
 
 ## For reviewers
 
-Nivo Client is an independent Windows desktop application under development. It uses its own Microsoft application registration and the system browser for OAuth sign-in. The current alpha does not launch Minecraft or connect to game servers. Before gameplay is enabled, successful authentication and verification of game ownership will be required. The design preview provides access to the interface only and does not bypass authentication or license checks for gameplay.
+Nivo Client, formerly Cryo Client, uses its own existing Microsoft application registration. Its current alpha does not launch Minecraft or connect to game servers. Successful authentication and verification of game ownership will be required before gameplay is enabled. The preview only provides access to the launcher interface.
 
-## Projekt und Kontakt
-
-[Discord: Community, Feedback und Verbesserungsvorschläge](https://discord.gg/YBmWn3EeKz).
-
-Projektbetreiber: [Jonaz123187](https://github.com/Jonaz123187).
-
-Cryo Client ist ein unabhängiges Community-Projekt und steht in keiner Verbindung zu Mojang Studios oder Microsoft. Minecraft und die genannten Modprojekte gehören ihren jeweiligen Rechteinhabern.
-
+Nivo ist ein unabhängiges Projekt von [Jonaz123187](https://github.com/Jonaz123187) und steht nicht mit Mojang Studios oder Microsoft in Verbindung.

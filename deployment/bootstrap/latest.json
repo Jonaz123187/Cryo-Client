@@ -1,0 +1,11 @@
+{
+  "version": "0.4.0",
+  "notes": "Eigene Instanzbilder mit Zuschnitt und Zoom\nÜberarbeiteter Skin und suchbare Einstellungen\nDownloadverlauf und signierter Launcher-Updater",
+  "pub_date": "2026-10-25T13:52:31.026Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTNU8vZnNYU0JNYWNoSUtjeGVJN21xMFlWSk9xdEMyTjZkdUJneGhyOERBMlZxWEIvOWtFc2VvVUFGTU5KN3VEaVlFd3JNeG1qendHNDd1bmpVUFNYbmVoUHN4UXhtbUFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyOTM2MzUxCWZpbGU6Tml2byBDbGllbnRfMC40LjBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuNC4wCndzcGlLeDIvZnJRc1RTcGR2NG5GVFJlNEYxcVZyRFFuSjA4ZU5wdlYrVTJxU3Rvb2Y5emVCcHlCZXJldDBDd1Y2Zko3Rk5KaGkvdE9JUU1CNjVRNEFRPT0K",
+      "url": "https://cryo-client.pages.dev/downloads/Nivo-Client-0.4.0-Setup.exe"
+    }
+  }
+}

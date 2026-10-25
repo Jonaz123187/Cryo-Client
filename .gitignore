@@ -1,0 +1,9 @@
+deployment/out/
+deployment/signature-check/target/
+deployment/__pycache__/
+*.pyc
+.env
+*.dpapi
+*.key
+!deployment/updater-public.key
+

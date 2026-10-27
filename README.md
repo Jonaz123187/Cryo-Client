@@ -4,7 +4,7 @@ Minecraft-Launcher für Mods und Modpacks. Öffentliche Alpha **0.4.4** mit Cape
 
 - [Website und aktueller Download](https://cryo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
-- [Nivo Client 0.4.4 und Nivo Core](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.4.4): neue Cape-Bibliothek, animierter Skin, Bildeditor und aufgeräumter Startbereich.
+- [Nivo Client 0.4.4](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.4.4): neue Cape-Bibliothek, animierter Skin, Bildeditor und aufgeräumter Startbereich.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
@@ -17,7 +17,7 @@ Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt ein
 
 Der vorläufige Spielstart über Prism funktioniert weiterhin nicht zuverlässig. Nutze vorerst deinen bisherigen Launcher. Online-Profile und geteilte Capes bleiben auf freigeschaltete Testkonten begrenzt; der öffentliche Download erweitert diesen Testkreis nicht automatisch.
 
-Die separat verfügbare Nivo-Core-Mod benötigt Minecraft 26.3, Fabric 0.19.5, Java 25 und passende Fabric API. Alte Nivo-JARs vor dem Ersetzen entfernen. Capes werden im Nivo-Launcher geändert. Freecam und ähnliche Funktionen können auf Servern verboten sein; Serverregeln beachten. Das Setup besitzt noch kein Windows-Herausgeberzertifikat.
+Die Nivo-Core-Mod wird nicht als separater öffentlicher Download angeboten; eigenständige Mod-Tests bleiben privat. Capes werden im Nivo-Launcher geändert. Freecam und ähnliche Funktionen können auf Servern verboten sein; Serverregeln beachten. Das Setup besitzt noch kein Windows-Herausgeberzertifikat.
 
 ## Website und Veröffentlichung
 

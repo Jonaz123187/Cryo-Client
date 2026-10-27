@@ -1,10 +1,10 @@
 # Nivo Client
 
-Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.5.2** mit direktem Microsoft-Spielstart, Live-Konsole, Skin-Upload und integrierter Nivo-Core-Mod.
+Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.5.3** mit direktem Microsoft-Spielstart, großer Live-Konsole, Skin-Sammlung und integrierter Nivo-Core-Mod.
 
 - [Website und aktueller Download](https://nivo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
-- [Nivo Client 0.5.2](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.5.2): direkter Start, automatische Online-Verbindung, Core-Migration und erhaltene Tastenbelegungen.
+- [Nivo Client 0.5.3](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.5.3): Skin-Sammlung, lesbare Konsole, Instanzsuche, klare Laufanzeigen und automatischer Discord-Spielkontext.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
@@ -39,6 +39,6 @@ Der private Signierschlüssel bleibt auf dem Entwickler-PC. Dieser öffentliche 
 
 ## For reviewers
 
-Nivo Client, formerly Cryo Client, uses its own Microsoft application registration. Mojang has reported approval; the complete login and direct-launch flow is being tested locally for the next release. Public version 0.4.4 still has an unreliable temporary Prism bridge. No Prism credentials are imported. Standalone Fabric-mod tests remain private. The profile service requires verified Minecraft sessions.
+Nivo Client, formerly Cryo Client, uses its own Microsoft application registration. Mojang has reported approval; Microsoft login and direct launch with Fabric 26.3 have been tested locally. Prism is no longer needed. Standalone Fabric-mod builds remain private. The profile service requires verified Minecraft sessions.
 
 Nivo ist ein unabhängiges Projekt von [Jonaz123187](https://github.com/Jonaz123187) und steht nicht mit Mojang Studios oder Microsoft in Verbindung.

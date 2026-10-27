@@ -1,9 +1,6 @@
 name: Publish Nivo profile service
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ["deployment/profile-service/**", ".github/workflows/publish-profiles.yml"]
 permissions:
   contents: read
 concurrency:
@@ -23,7 +20,7 @@ jobs:
       - name: Deploy worker while preserving existing service configuration
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.152.0"
           command: deploy --config deployment/profile-service/wrangler.jsonc --keep-vars

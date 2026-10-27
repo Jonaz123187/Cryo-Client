@@ -1,23 +1,23 @@
 # Nivo Client
 
-Minecraft-Launcher für Mods und Modpacks. Öffentliche Alpha **0.4.4** mit Cape-Editor, Erststart-Einrichtung und separater Nivo-Core-Mod.
+Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.5.2** mit direktem Microsoft-Spielstart, Live-Konsole, Skin-Upload und integrierter Nivo-Core-Mod.
 
 - [Website und aktueller Download](https://nivo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
-- [Nivo Client 0.4.4](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.4.4): neue Cape-Bibliothek, animierter Skin, Bildeditor und aufgeräumter Startbereich.
+- [Nivo Client 0.5.2](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.5.2): direkter Start, automatische Online-Verbindung, Core-Migration und erhaltene Tastenbelegungen.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
 
 Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials, eigene Instanzbilder, animierter Skin, einstellbares Glasdesign und Discord Rich Presence.
 
-Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt eine gültige Signatur einschließlich Versionsnummer. Die Microsoft-Anmeldung verwendet Systembrowser und PKCE; Refresh-Tokens liegen im Windows Credential Manager. Die Minecraft-App-Freigabe und der vollständige Kontotest stehen noch aus.
+Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt eine gültige Signatur einschließlich Versionsnummer. Die Microsoft-Anmeldung verwendet Systembrowser und PKCE; Refresh-Tokens liegen im Windows Credential Manager. Die Minecraft-App ist freigegeben; der authentifizierte direkte Start mit Fabric 26.3 wurde getestet.
 
 ## Aktuelle Einschränkungen
 
-Der vorläufige Spielstart im öffentlichen Installer 0.4.4 über Prism funktioniert weiterhin nicht zuverlässig. Nutze vorerst deinen bisherigen Launcher.
+Minecraft startet direkt über Nivo. Die zusätzlichen Ingame-Funktionen von Nivo Core sind derzeit auf Fabric 26.3 begrenzt; weitere Versionen benötigen eigene Portierungen.
 
-Der Profildienst nimmt inzwischen Minecraft-verifizierte Konten außerhalb des bisherigen Testkreises an. Die automatische Verbindung und der direkte Spielstart werden mit dem kommenden Launcher-Update noch lokal getestet; der öffentliche Installer bleibt vorerst 0.4.4.
+Der Profildienst nimmt Minecraft-verifizierte Konten öffentlich an. Die Verbindung erfolgt nach dem Beitritt automatisch. Der Cape-Datentransport ist korrigiert; ein gemeinsamer Test mit zwei echten Konten steht noch aus.
 
 Die Nivo-Core-Mod wird nicht als separater öffentlicher Download angeboten; eigenständige Mod-Tests bleiben privat. Capes werden im Nivo-Launcher geändert. Freecam und ähnliche Funktionen können auf Servern verboten sein; Serverregeln beachten. Das Setup besitzt noch kein Windows-Herausgeberzertifikat.
 

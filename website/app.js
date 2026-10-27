@@ -27,6 +27,8 @@ function setFeature(tab, focus = false) {
     item.tabIndex = selected ? 0 : -1;
   });
   document.querySelector("#panel-content").innerHTML = content.html;
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    document.querySelector("#panel-content").animate([{opacity:0,transform:"translateY(10px)"},{opacity:1,transform:"translateY(0)"}],{duration:280,easing:"ease-out"});
   document.querySelector("#panel-breadcrumb").textContent = content.breadcrumb;
   document.querySelector("#panel-footer-text").textContent = content.footer;
   document

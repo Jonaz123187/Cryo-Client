@@ -19,7 +19,8 @@ import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-ORIGIN = "https://cryo-client.pages.dev"
+ORIGIN = "https://nivo-client.pages.dev"
+LEGACY_ORIGIN = "https://cryo-client.pages.dev"
 REPOSITORY = "Jonaz123187/Nivo-Client"
 MAX_FILE = 25 * 1024 * 1024
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
@@ -30,7 +31,7 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
         target = urllib.parse.urlsplit(newurl)
         if target.scheme != "https" or target.hostname not in {
             "github.com", "api.github.com", "release-assets.githubusercontent.com",
-            "objects.githubusercontent.com", "cryo-client.pages.dev",
+            "objects.githubusercontent.com", "cryo-client.pages.dev", "nivo-client.pages.dev",
         }:
             raise ValueError("Unsupported download redirect")
         result = super().redirect_request(req, fp, code, msg, headers, newurl)
@@ -75,7 +76,7 @@ def validate_release(manifest, feed, installer, expected_version=None):
     if not isinstance(checksum, str) or not re.fullmatch(r"[a-f0-9]{64}", checksum) or hashlib.sha256(installer).hexdigest() != checksum:
         raise ValueError("Installer SHA-256 mismatch")
     windows = feed.get("platforms", {}).get("windows-x86_64", {})
-    if feed.get("version") != version or windows.get("url") != ORIGIN + "/" + relative:
+    if feed.get("version") != version or windows.get("url") not in {ORIGIN + "/" + relative, LEGACY_ORIGIN + "/" + relative}:
         raise ValueError("Update feed does not match the release")
     signature = windows.get("signature", "")
     if not isinstance(signature, str) or len(signature) > 4096 or not re.fullmatch(r"[A-Za-z0-9+/=]+", signature):
@@ -156,7 +157,7 @@ def bootstrap():
     expected = f"/downloads/Nivo-Client-{version}-Setup.exe"
     if manifest.get("file") != expected:
         raise ValueError("Invalid bootstrap file")
-    installer = fetch(ORIGIN + expected, MAX_FILE)
+    installer = fetch(LEGACY_ORIGIN + expected, MAX_FILE)
     validate_release(manifest, feed, installer)
     return manifest, feed, installer
 
@@ -183,6 +184,9 @@ def render_html(source, manifest, output):
 def build(output, payload):
     manifest, feed, installer = payload
     relative = validate_release(manifest, feed, installer)
+    # Existing signed releases stay valid while download hosting migrates.
+    feed = json.loads(json.dumps(feed))
+    feed["platforms"]["windows-x86_64"]["url"] = ORIGIN + "/" + relative
     if output.exists() and any(output.iterdir()):
         raise ValueError("Deployment output must be empty")
     output.mkdir(parents=True, exist_ok=True)

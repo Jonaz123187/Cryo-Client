@@ -58,17 +58,32 @@ jobs:
             echo 'Release and signature checks passed. Add the two Cloudflare repository secrets, then run this workflow again.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Publish to existing Cloudflare Pages project
+      - name: Publish Nivo website
         if: steps.access.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.152.0"
-          command: pages deploy deployment/out --project-name=cryo-client --branch=main
+          command: pages deploy deployment/out --project-name=nivo-client --branch=main
+
+      - name: Prepare legacy address without breaking old update clients
+        if: steps.access.outputs.ready == 'true'
+        run: |
+          cp -a deployment/out deployment/legacy
+          printf '/ https://nivo-client.pages.dev/ 302\n' >> deployment/legacy/_redirects
+
+      - name: Keep legacy downloads and update feed reachable
+        if: steps.access.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.152.0"
+          command: pages deploy deployment/legacy --project-name=cryo-client --branch=main
 
       - name: Summarize deployment
         if: steps.access.outputs.ready == 'true'
         run: |
           echo '### Nivo website published' >> "$GITHUB_STEP_SUMMARY"
-          echo 'https://cryo-client.pages.dev/' >> "$GITHUB_STEP_SUMMARY"
+          echo 'https://nivo-client.pages.dev/' >> "$GITHUB_STEP_SUMMARY"

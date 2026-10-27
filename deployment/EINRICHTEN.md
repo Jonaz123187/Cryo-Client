@@ -1,6 +1,6 @@
 # Automatische Veröffentlichung einrichten
 
-Die Website und die geprüfte Veröffentlichungsroutine sind vorbereitet. Der bestehende Host cryo-client.pages.dev bleibt erhalten, damit ältere Launcher ihren Update-Endpunkt erreichen.
+Die Website läuft unter https://nivo-client.pages.dev/. Der bestehende Host cryo-client.pages.dev bleibt erhalten, damit ältere Launcher ihren Update-Endpunkt erreichen. Seine Startseite leitet zur neuen Adresse weiter.
 
 ## Einmalig: Cloudflare mit GitHub verbinden
 
@@ -13,7 +13,7 @@ Diese Zugangsschritte bitte direkt in den jeweiligen Portalen selbst ausführen.
 5. Zwei Repository-Secrets anlegen: CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID.
 6. Unter Actions den Ablauf „Publish Nivo website“ öffnen und einmal „Run workflow“ ausführen.
 
-Es wird kein neues Cloudflare-Projekt angelegt und die Domain nicht geändert. Ohne diese beiden Werte prüft der Ablauf die Dateien und meldet ausdrücklich, dass die Verbindung noch fehlt.
+Die kostenlosen Pages-Projekte nivo-client und cryo-client sind bereits angelegt und mit demselben Workflow verbunden. Ohne diese beiden Werte prüft der Ablauf die Dateien und meldet ausdrücklich, dass die Verbindung noch fehlt. Für neue Releases ist kein manueller Cloudflare-Upload mehr nötig.
 
 Offizielle Anleitung: https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/
 

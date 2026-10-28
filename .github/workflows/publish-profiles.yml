@@ -31,6 +31,7 @@ jobs:
           with urllib.request.urlopen('https://nivo-api.jonasneubauer94.workers.dev/health', timeout=30) as response:
               data=json.load(response)
           assert data.get('revision')=='public-profiles-3', data
+          assert data.get('cosmetics')==1, data
           assert data.get('registration')=='minecraft-verified', data
           assert data.get('verifier')=='supabase', data
           print('Public profile service is healthy; Minecraft proof remains required.')

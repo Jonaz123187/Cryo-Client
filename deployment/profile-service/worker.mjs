@@ -39,6 +39,7 @@ export function sanitizeProfile(p) {
   if(!['none','nivo','ice','aurora','sunset','custom'].includes(back))throw new Failure(400,'invalid_back_banner');
   const asset=p.backBannerAsset??'';if(asset!==''&&(typeof asset!=='string'||!/^[a-f0-9]{64}$/.test(asset)))throw new Failure(400,'invalid_banner_asset');
   result.backBanner=back;result.backBannerAsset=back==='custom'?asset:'';
+  for(const k of ['cosmeticBanner','cosmeticWings','cosmeticShield']){const v=p[k]??'none';const allowed=k==='cosmeticShield'?['none','zzv4','million','green','blue','red','purple','gold','cyan','pink']:['none','zzv4','500k','million'];if(!allowed.includes(v))throw new Failure(400,'invalid_cosmetic');result[k]=v;}
   return result; // Never store arbitrary names, tokens, URLs, skin data or HUD layouts.
 }
 async function digest(s) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(s)))].map(b => b.toString(16).padStart(2,'0')).join(''); }
@@ -82,7 +83,7 @@ async function sessionResponse(challenge,env,upstream){
 }
 export async function handle(request, env, upstream=fetch) {
   const path=new URL(request.url).pathname, now=Math.floor(Date.now()/1000);
-  if(path==='/health' && request.method==='GET')return reply({service:'nivo-profiles',version:1,revision:'public-profiles-3',registration:env.PRIVATE_TEST==='true'?'private':'minecraft-verified',verifier:env.MINECRAFT_VERIFIER_URL?'supabase':'direct'});
+  if(path==='/health' && request.method==='GET')return reply({service:'nivo-profiles',version:1,revision:'public-profiles-3',cosmetics:1,registration:env.PRIVATE_TEST==='true'?'private':'minecraft-verified',verifier:env.MINECRAFT_VERIFIER_URL?'supabase':'direct'});
   if(/^\/v1\/banners\/[a-f0-9]{64}$/.test(path)&&request.method==='GET'){
     if(!env.DB)throw new Failure(503,'database_not_configured');await rate(request,env,now,path);
     await env.DB.prepare('CREATE TABLE IF NOT EXISTS banner_assets (owner TEXT PRIMARY KEY, hash TEXT NOT NULL, data BLOB NOT NULL)').run();

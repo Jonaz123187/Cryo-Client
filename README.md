@@ -1,21 +1,21 @@
 # Nivo Client
 
-Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.5.3** mit direktem Microsoft-Spielstart, großer Live-Konsole, Skin-Sammlung und integrierter Nivo-Core-Mod.
+Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.6.0** mit direktem Microsoft-Spielstart, großer Live-Konsole, Skin-Sammlung und integrierter Nivo-Core-Mod.
 
 - [Website und aktueller Download](https://nivo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
-- [Nivo Client 0.5.3](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.5.3): Skin-Sammlung, lesbare Konsole, Instanzsuche, klare Laufanzeigen und automatischer Discord-Spielkontext.
+- [Nivo Client 0.6.0](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.6.0): Nivo Core für drei Versionen, eigene Mod-Presets, Sicherungen, Mod-Updates und überarbeitete Skin-Sammlung.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
 
-Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials, eigene Instanzbilder, animierter Skin, einstellbares Glasdesign und Discord Rich Presence.
+Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials und eigene Mod-Presets, automatische lokale Weltsicherungen, gesicherte Mod-Updates, Setup-Vergleich, lokale Leistungsberichte, eigene Instanzbilder, animierter Skin, einstellbares Glasdesign und Discord Rich Presence.
 
 Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt eine gültige Signatur einschließlich Versionsnummer. Die Microsoft-Anmeldung verwendet Systembrowser und PKCE; Refresh-Tokens liegen im Windows Credential Manager. Die Minecraft-App ist freigegeben; der authentifizierte direkte Start mit Fabric 26.3 wurde getestet.
 
 ## Aktuelle Einschränkungen
 
-Minecraft startet direkt über Nivo. Die zusätzlichen Ingame-Funktionen von Nivo Core sind derzeit auf Fabric 26.3 begrenzt; weitere Versionen benötigen eigene Portierungen.
+Minecraft startet direkt über Nivo. Die zusätzlichen Ingame-Funktionen von Nivo Core sind derzeit für Fabric 26.3, 26.2 und 1.21.11 verfügbar; andere Versionen benötigen eigene Portierungen.
 
 Der Profildienst nimmt Minecraft-verifizierte Konten öffentlich an. Die Verbindung erfolgt nach dem Beitritt automatisch. Der Cape-Datentransport ist korrigiert; ein gemeinsamer Test mit zwei echten Konten steht noch aus.
 

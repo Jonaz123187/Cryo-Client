@@ -92,3 +92,7 @@
     font-size: 11px;
   }
 }
+
+/* Current public demo navigation; neutral instance examples only. */
+.preview-sidebar .preview-nav { padding-block: 6px; }
+.preview-sidebar .instance-label { margin-top: 16px; }

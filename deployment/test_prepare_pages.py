@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 import tempfile
 import zipfile
-from prepare_pages import from_archive, render_html, validate_release
+from prepare_pages import from_archive, render_html, validate_release, externalize, MAX_FILE
 
 
 def payload():
@@ -56,6 +56,56 @@ class DeploymentTests(unittest.TestCase):
             self.assertIn('&lt;script&gt;',result)
             self.assertNotIn('/app.js?v=old',result)
             self.assertIn('Version 0.4.1',result)
+
+
+class ExternalInstallerTests(unittest.TestCase):
+    def metadata_archive(self):
+        manifest, feed, installer = payload()
+        data = io.BytesIO()
+        with zipfile.ZipFile(data, "w") as archive:
+            archive.writestr("release.json", json.dumps(manifest))
+            archive.writestr("updates/latest.json", json.dumps(feed))
+        return data.getvalue(), manifest, feed, installer
+
+    def test_metadata_only_archive_requires_explicit_installer_source(self):
+        archive, manifest, feed, installer = self.metadata_archive()
+        with self.assertRaises(ValueError): from_archive(archive)
+        versions = []
+        def download(version):
+            versions.append(version)
+            return installer
+        self.assertEqual(from_archive(archive, manifest["version"], download), (manifest, feed, installer))
+        self.assertEqual(versions, [manifest["version"]])
+        with self.assertRaises(ValueError): from_archive(archive, manifest["version"], lambda v: installer + b"tamper")
+        with self.assertRaises(ValueError): from_archive(archive, "99.0.0", download)
+        self.assertEqual(len(versions), 1)
+
+    def test_externalize_keeps_only_fixed_repository_download_redirects(self):
+        _, manifest, feed, installer = self.metadata_archive()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "downloads").mkdir()
+            (root / "updates").mkdir()
+            (root / "release.json").write_text(json.dumps(manifest), encoding="utf-8")
+            (root / "updates/latest.json").write_text(json.dumps(feed), encoding="utf-8")
+            target = root / manifest["file"].lstrip("/")
+            stable = root / "downloads/Nivo-Client-Setup.exe"
+            target.write_bytes(installer)
+            stable.write_bytes(installer + b"wrong")
+            with self.assertRaises(ValueError): externalize(root)
+            self.assertTrue(target.exists())
+            stable.write_bytes(installer)
+            externalize(root)
+            self.assertFalse(target.exists())
+            self.assertFalse(stable.exists())
+            routes = (root / "_redirects").read_text(encoding="utf-8")
+            self.assertIn("/downloads/Nivo-Client-Setup.exe https://github.com/Jonaz123187/Nivo-Client/releases/download/v0.4.1/Nivo-Client-0.4.1-Setup.exe 302", routes)
+
+    def test_signed_installer_may_exceed_pages_file_limit(self):
+        manifest, feed, _ = payload()
+        installer = b"MZ" + bytes(MAX_FILE)
+        manifest.update(bytes=len(installer), sha256=hashlib.sha256(installer).hexdigest())
+        validate_release(manifest, feed, installer)
 
 
 if __name__ == "__main__":unittest.main()

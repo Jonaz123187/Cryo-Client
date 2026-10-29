@@ -23,6 +23,7 @@ ORIGIN = "https://nivo-client.pages.dev"
 LEGACY_ORIGIN = "https://cryo-client.pages.dev"
 REPOSITORY = "Jonaz123187/Nivo-Client"
 MAX_FILE = 25 * 1024 * 1024
+MAX_INSTALLER = 128 * 1024 * 1024
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 
 
@@ -70,7 +71,7 @@ def validate_release(manifest, feed, installer, expected_version=None):
     relative = f"downloads/Nivo-Client-{version}-Setup.exe"
     if manifest.get("file") != "/" + relative:
         raise ValueError("Unexpected installer path")
-    if not installer.startswith(b"MZ") or len(installer) >= MAX_FILE or len(installer) != manifest.get("bytes"):
+    if not installer.startswith(b"MZ") or len(installer) >= MAX_INSTALLER or len(installer) != manifest.get("bytes"):
         raise ValueError("Invalid Windows installer or size")
     checksum = manifest.get("sha256", "")
     if not isinstance(checksum, str) or not re.fullmatch(r"[a-f0-9]{64}", checksum) or hashlib.sha256(installer).hexdigest() != checksum:
@@ -87,7 +88,7 @@ def validate_release(manifest, feed, installer, expected_version=None):
     return relative
 
 
-def from_archive(data, expected_version=None):
+def from_archive(data, expected_version=None, installer_fetch=None):
     if len(data) > 64 * 1024 * 1024:
         raise ValueError("Archive is too large")
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
@@ -111,10 +112,18 @@ def from_archive(data, expected_version=None):
         version = manifest.get("version", "")
         if not isinstance(version, str) or not VERSION.fullmatch(version):
             raise ValueError("Invalid release version")
-        installer = archive.read(f"downloads/Nivo-Client-{version}-Setup.exe")
+        if expected_version and version != expected_version:
+            raise ValueError("Release ZIP does not match its GitHub tag")
+        filename = f"downloads/Nivo-Client-{version}-Setup.exe"
+        if filename in archive.namelist():
+            installer = archive.read(filename)
+            if archive.read("downloads/Nivo-Client-Setup.exe") != installer:
+                raise ValueError("Stable installer differs from the versioned file")
+        elif installer_fetch is not None:
+            installer = installer_fetch(version)
+        else:
+            raise ValueError("Metadata-only release needs its separately verified installer")
         validate_release(manifest, feed, installer, expected_version)
-        if archive.read("downloads/Nivo-Client-Setup.exe") != installer:
-            raise ValueError("Stable installer differs from the versioned file")
     return manifest, feed, installer
 
 
@@ -145,7 +154,8 @@ def github_release(tag=None):
     parsed = urllib.parse.urlsplit(url)
     if parsed.scheme != "https" or parsed.hostname != "github.com" or not parsed.path.startswith(f"/{REPOSITORY}/releases/download/"):
         raise ValueError("Invalid GitHub asset URL")
-    return from_archive(fetch(url, 64 * 1024 * 1024), version)
+    return from_archive(fetch(url, 64 * 1024 * 1024), version,
+        lambda v: fetch(f"https://github.com/{REPOSITORY}/releases/download/v{v}/Nivo-Client-{v}-Setup.exe", MAX_INSTALLER))
 
 
 def bootstrap():
@@ -213,13 +223,47 @@ def build(output, payload):
     return manifest["version"]
 
 
+def externalize(output):
+    output = output.resolve()
+    manifest = json.loads((output / "release.json").read_text(encoding="utf-8"))
+    feed = json.loads((output / "updates/latest.json").read_text(encoding="utf-8"))
+    version = manifest.get("version", "")
+    if not isinstance(version, str) or not VERSION.fullmatch(version):
+        raise ValueError("Invalid release version")
+    target = output / f"downloads/Nivo-Client-{version}-Setup.exe"
+    stable = output / "downloads/Nivo-Client-Setup.exe"
+    if any(path.is_symlink() or not path.resolve().is_relative_to(output) for path in (target, stable)):
+        raise ValueError("Unsafe installer path")
+    installer = target.read_bytes()
+    relative = validate_release(manifest, feed, installer)
+    if stable.read_bytes() != installer:
+        raise ValueError("Stable installer differs from the verified file")
+    url = f"https://github.com/{REPOSITORY}/releases/download/v{version}/Nivo-Client-{version}-Setup.exe"
+    redirects = output / "_redirects"
+    text = redirects.read_text(encoding="utf-8") if redirects.exists() else ""
+    routes = {"/" + relative, "/downloads/Nivo-Client-Setup.exe"}
+    text = "\n".join(line for line in text.splitlines() if not line.split() or line.split()[0] not in routes)
+    redirects.write_text(text.rstrip() + "\n" + "\n".join(f"{route} {url} 302" for route in sorted(routes)) + "\n", encoding="utf-8")
+    target.unlink()
+    stable.unlink()
+    for path in output.rglob("*"):
+        if path.is_file() and (path.stat().st_size >= MAX_FILE or path.suffix == ".exe"):
+            raise ValueError("Unexpected binary or oversized file in Pages output")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--archive", type=Path, help="Local release ZIP, for validation")
+    parser.add_argument("--installer", type=Path, help="Local installer for a metadata-only release ZIP")
+    parser.add_argument("--externalize", action="store_true", help="After signature verification, replace installer copies with trusted GitHub redirects")
     args = parser.parse_args()
+    if args.externalize:
+        externalize(args.output)
+        print("Installer bytes verified; Pages now serves fixed GitHub Release redirects.")
+        return
     if args.archive:
-        payload = from_archive(args.archive.read_bytes())
+        payload = from_archive(args.archive.read_bytes(), installer_fetch=(lambda v: args.installer.read_bytes()) if args.installer else None)
     else:
         payload = github_release(os.environ.get("NIVO_RELEASE_TAG") or None)
         if payload is None:

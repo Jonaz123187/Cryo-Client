@@ -1,15 +1,15 @@
 # Nivo Client
 
-Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.6.3** mit direktem Microsoft-Spielstart, großer Live-Konsole, Skin-Sammlung und integrierter Nivo-Core-Mod.
+Minecraft-Launcher für Mods und Modpacks. Öffentliche Beta **0.7.0** mit direktem Microsoft-Spielstart, großer Live-Konsole, Skin-Sammlung und integrierter Nivo-Core-Mod.
 
 - [Website und aktueller Download](https://nivo-client.pages.dev/)
 - [GitHub Releases](https://github.com/Jonaz123187/Nivo-Client/releases)
-- [Nivo Client 0.6.3](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.6.3): Server-Texturpaket-Fix, Mod-Detailansicht, Farbwähler und überarbeitete Übergänge.
+- [Nivo Client 0.7.0](https://github.com/Jonaz123187/Nivo-Client/releases/tag/v0.7.0): Animierte Cosmetics, Skin-Rückfall, Download-Zentrale und Server-Favoriten.
 - [Discord: Hilfe, Fehler und Vorschläge](https://discord.gg/YBmWn3EeKz)
 
 ## Funktionen
 
-Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials und eigene Mod-Presets, automatische lokale Weltsicherungen, gesicherte Mod-Updates, Setup-Vergleich, lokale Leistungsberichte, eigene Instanzbilder, animierter Skin, einstellbares Glasdesign und Discord Rich Presence.
+Instanzen und Versionen verwalten, Mods/Shader/Ressourcenpakete über Modrinth suchen, erforderliche Abhängigkeiten laden und Modpacks importieren. Optionale Nivo Essentials und eigene Mod-Presets, automatische lokale Weltsicherungen, gesicherte Mod-Updates, Setup-Vergleich, lokale Leistungsberichte, eigene Instanzbilder, animierte Banner, Flügel und Schilde, Download-Zentrale, Server-Favoriten, einstellbares Glasdesign und Discord Rich Presence.
 
 Downloads werden mit Prüfsummen kontrolliert. Der Launcher-Updater verlangt eine gültige Signatur einschließlich Versionsnummer. Die Microsoft-Anmeldung verwendet Systembrowser und PKCE; Refresh-Tokens liegen im Windows Credential Manager. Die Minecraft-App ist freigegeben; der authentifizierte direkte Start mit Fabric 26.3 wurde getestet.
 
@@ -42,3 +42,7 @@ Der private Signierschlüssel bleibt auf dem Entwickler-PC. Dieser öffentliche 
 Nivo Client, formerly Cryo Client, uses its own Microsoft application registration. Mojang has reported approval; Microsoft login and direct launch with Fabric 26.3 have been tested locally. Prism is no longer needed. Standalone Fabric-mod builds remain private. The profile service requires verified Minecraft sessions.
 
 Nivo ist ein unabhängiges Projekt von [Jonaz123187](https://github.com/Jonaz123187) und steht nicht mit Mojang Studios oder Microsoft in Verbindung.
+
+## Community-Cosmetics
+
+Die Modelle [BastiGHG ZZv4 Cosmetics](https://skfb.ly/pIBrR), [Bastighg 500k Cosmetics](https://skfb.ly/pIvpY) und [BastiGHG ZZv4 1,5 Million](https://skfb.ly/pILxF) stammen von **nqazrls** und stehen unter [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Für Nivo wurden sie konvertiert, am Spieler verankert und um Modellbewegungen ergänzt. Die Originaltexturen bleiben unverändert. Es handelt sich um Community-Modelle.

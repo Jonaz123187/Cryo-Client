@@ -42,6 +42,9 @@ jobs:
       - name: Verify installer signature and signed version
         run: cargo run --locked --manifest-path deployment/signature-check/Cargo.toml -- deployment/out deployment/updater-public.key
 
+      - name: Serve verified installers through GitHub Releases
+        run: python3 deployment/prepare_pages.py --output deployment/out --externalize
+
       - name: Check Cloudflare connection
         id: access
         env:

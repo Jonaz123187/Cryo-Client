@@ -169,5 +169,5 @@ copyButton.addEventListener("click", async () => {
 
 if('IntersectionObserver' in window&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
  const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('reveal-visible');observer.unobserve(entry.target);}},{threshold:.08});
- document.querySelectorAll('.feature-section,.community,.development,.download-section').forEach(el=>{el.classList.add('reveal-ready');observer.observe(el);});
+ document.querySelectorAll('.feature-section,.community,.development,#download').forEach(el=>{el.classList.add('reveal-ready');observer.observe(el);});
 }

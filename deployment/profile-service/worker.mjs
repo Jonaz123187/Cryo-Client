@@ -43,6 +43,33 @@ export function sanitizeProfile(p) {
   return result; // Never store arbitrary names, tokens, URLs, skin data or HUD layouts.
 }
 async function digest(s) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(s)))].map(b => b.toString(16).padStart(2,'0')).join(''); }
+export async function usageKey(env,id) {
+  if(typeof env.USAGE_SECRET!=='string'||env.USAGE_SECRET.length<32)throw new Failure(503,'statistics_not_configured');
+  const key=await crypto.subtle.importKey('raw',enc.encode(env.USAGE_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  return [...new Uint8Array(await crypto.subtle.sign('HMAC',key,enc.encode(`nivo-usage-v1:${id}`)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function recordUsage(env,id,b,now) {
+  const key=await usageKey(env,id);
+  if(b.consent===false){await env.DB.batch([env.DB.prepare('DELETE FROM usage_daily WHERE user_key=?').bind(key),env.DB.prepare('DELETE FROM usage_users WHERE user_key=?').bind(key)]);return;}
+  if(b.consent!==true||!['launcher','game'].includes(b.kind)||typeof b.version!=='string'||!/^\d+\.\d+\.\d+(?:[-.a-zA-Z0-9]*)$/.test(b.version)||b.version.length>48)throw new Failure(400,'invalid_usage');
+  const day=new Date(now*1000).toISOString().slice(0,10);
+  await env.DB.batch([
+    env.DB.prepare('INSERT INTO usage_users(user_key,first_seen,last_seen) VALUES(?,?,?) ON CONFLICT(user_key) DO UPDATE SET last_seen=excluded.last_seen').bind(key,now,now),
+    env.DB.prepare('INSERT INTO usage_daily(day,user_key,kind,version,last_seen) VALUES(?,?,?,?,?) ON CONFLICT(day,user_key,kind) DO UPDATE SET version=excluded.version,last_seen=excluded.last_seen').bind(day,key,b.kind,b.version,now)
+  ]);
+}
+async function statistics(env,id,now){
+  if(!env.STATS_OWNER_UUID||uuid(env.STATS_OWNER_UUID)!==id)throw new Failure(403,'owner_only');
+  const today=new Date(now*1000).toISOString().slice(0,10),month=new Date((now-29*86400)*1000).toISOString().slice(0,10);
+  const active=await env.DB.prepare('SELECT COUNT(*) AS count FROM profiles WHERE seen>?').bind(now-120).first();
+  const registered=await env.DB.prepare('SELECT COUNT(*) AS count,MIN(first_seen) AS since FROM registered_users').first();
+  const peak=await env.DB.prepare('SELECT peak,sampled FROM statistics_peak WHERE id=1').first();
+  const total=await env.DB.prepare('SELECT COUNT(*) AS count FROM usage_users').first();
+  const daily=await env.DB.prepare('SELECT day,COUNT(DISTINCT user_key) AS users FROM usage_daily WHERE day>=? GROUP BY day ORDER BY day').bind(month).all();
+  const monthly=await env.DB.prepare('SELECT COUNT(DISTINCT user_key) AS count FROM usage_daily WHERE day>=?').bind(month).first();
+  const versions=await env.DB.prepare('SELECT kind,version,COUNT(*) AS users FROM usage_daily WHERE day=? GROUP BY kind,version ORDER BY users DESC LIMIT 40').bind(today).all();
+  return {measuredAt:now,registered:registered.count,registrationSince:registered.since,activeGame:active.count,peakOnline:Math.max(peak?.peak??0,active.count),peakSampled:peak?.sampled??null,participatingTotal:total.count,participating30Days:monthly.count,daily:daily.results,versions:versions.results,historyDays:35};
+}
 function random() { return [...crypto.getRandomValues(new Uint8Array(32))].map(b=>b.toString(16).padStart(2,'0')).join(''); }
 function reply(data, status=200) { return new Response(JSON.stringify(data), {status, headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}}); }
 async function body(request,max=MAX_BODY) {
@@ -83,7 +110,7 @@ async function sessionResponse(challenge,env,upstream){
 }
 export async function handle(request, env, upstream=fetch) {
   const path=new URL(request.url).pathname, now=Math.floor(Date.now()/1000);
-  if(path==='/health' && request.method==='GET')return reply({service:'nivo-profiles',version:1,revision:'public-profiles-3',cosmetics:1,registration:env.PRIVATE_TEST==='true'?'private':'minecraft-verified',verifier:env.MINECRAFT_VERIFIER_URL?'supabase':'direct'});
+  if(path==='/health' && request.method==='GET')return reply({service:'nivo-profiles',version:1,revision:'public-profiles-4',statistics:1,cosmetics:1,registration:env.PRIVATE_TEST==='true'?'private':'minecraft-verified',verifier:env.MINECRAFT_VERIFIER_URL?'supabase':'direct'});
   if(/^\/v1\/banners\/[a-f0-9]{64}$/.test(path)&&request.method==='GET'){
     if(!env.DB)throw new Failure(503,'database_not_configured');await rate(request,env,now,path);
     await env.DB.prepare('CREATE TABLE IF NOT EXISTS banner_assets (owner TEXT PRIMARY KEY, hash TEXT NOT NULL, data BLOB NOT NULL)').run();
@@ -94,7 +121,7 @@ export async function handle(request, env, upstream=fetch) {
     if(!bytes||bytes.byteLength!==491520)throw new Failure(500,'invalid_banner_asset');
     return new Response(bytes,{headers:{'content-type':'application/octet-stream','cache-control':'public, max-age=86400, immutable','x-content-type-options':'nosniff'}});
   }
-  if(!['/v1/challenge','/v1/verify','/v1/presence','/v1/profiles','/v1/logout','/v1/banner'].includes(path))throw new Failure(404,'not_found');
+  if(!['/v1/challenge','/v1/verify','/v1/presence','/v1/profiles','/v1/logout','/v1/banner','/v1/usage','/v1/stats'].includes(path))throw new Failure(404,'not_found');
   if(request.method!=='POST')throw new Failure(405,'post_required');
   if(!env.DB)throw new Failure(503,'database_not_configured');
   await rate(request,env,now,path);
@@ -129,9 +156,12 @@ export async function handle(request, env, upstream=fetch) {
     if(!consumed)throw new Failure(401,'challenge_used');
     const token=random();
     await env.DB.prepare('INSERT INTO sessions(token_hash,uuid,expires) VALUES(?,?,?)').bind(await digest(token),c.uuid,now+86400).run();
+    if(typeof env.USAGE_SECRET==='string'&&env.USAGE_SECRET.length>=32)await env.DB.prepare('INSERT OR IGNORE INTO registered_users(user_key,first_seen) VALUES(?,?)').bind(await usageKey(env,c.uuid),now).run();
     return reply({token,expiresIn:86400});
   }
   const id=await session(request,env,now);
+  if(path==='/v1/stats')return reply(await statistics(env,id,now));
+  if(path==='/v1/usage'){await recordUsage(env,id,b,now);return reply({ok:true});}
   if(path==='/v1/banner'){
     if(typeof b.pixels!=='string'||!/^[A-Za-z0-9+/]{655360}$/.test(b.pixels))throw new Failure(400,'invalid_banner_pixels');
     const raw=Uint8Array.from(atob(b.pixels),c=>c.charCodeAt(0));if(raw.length!==320*512*3)throw new Failure(400,'invalid_banner_pixels');
@@ -144,6 +174,7 @@ export async function handle(request, env, upstream=fetch) {
     const p=sanitizeProfile(b.profile);
     if(p.backBanner==='custom'&&p.backBannerAsset){const row=await env.DB.prepare('SELECT hash FROM banner_assets WHERE owner=? AND hash=?').bind(id,p.backBannerAsset).first();if(!row)throw new Failure(400,'banner_not_owned');}
     await env.DB.prepare('INSERT INTO profiles(uuid,profile,seen) VALUES(?,?,?) ON CONFLICT(uuid) DO UPDATE SET profile=excluded.profile,seen=excluded.seen').bind(id,JSON.stringify(p),now).run();
+    await env.DB.prepare('UPDATE statistics_peak SET peak=MAX(peak,(SELECT COUNT(*) FROM profiles WHERE seen>?)),sampled=? WHERE id=1 AND sampled<?').bind(now-120,now,now-60).run();
     return reply({ok:true,expiresIn:120});
   }
   if(path==='/v1/logout') {
@@ -167,6 +198,6 @@ export default {
   },
   async scheduled(event,env) {
     const now=Math.floor(Date.now()/1000);
-    await env.DB.batch(['challenges','sessions','limits'].map(t=>env.DB.prepare(`DELETE FROM ${t} WHERE expires<?`).bind(now)).concat([env.DB.prepare('DELETE FROM profiles WHERE seen<?').bind(now-86400)]));
+    await env.DB.batch(['challenges','sessions','limits'].map(t=>env.DB.prepare(`DELETE FROM ${t} WHERE expires<?`).bind(now)).concat([env.DB.prepare('DELETE FROM profiles WHERE seen<?').bind(now-86400),env.DB.prepare('DELETE FROM usage_daily WHERE day<?').bind(new Date((now-35*86400)*1000).toISOString().slice(0,10)),env.DB.prepare('DELETE FROM usage_users WHERE last_seen<?').bind(now-365*86400)]));
   }
 };

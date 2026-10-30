@@ -17,7 +17,27 @@ jobs:
           persist-credentials: false
       - name: Validate worker syntax
         run: node --check deployment/profile-service/worker.mjs
+      - name: Check profile service deployment permission
+        id: permission
+        env:
+          WORKER_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+        run: |
+          if [ -z "$WORKER_TOKEN" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Profile service was NOT published. Configure CLOUDFLARE_WORKERS_API_TOKEN to enable this optional deployment workflow. Existing production service is unchanged."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Apply additive database schema
+        if: steps.permission.outputs.configured == 'true'
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.152.0"
+          command: d1 execute nivo-profiles --remote --config deployment/profile-service/wrangler.jsonc --file deployment/profile-service/schema.sql --yes
       - name: Deploy worker while preserving existing service configuration
+        if: steps.permission.outputs.configured == 'true'
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
@@ -25,13 +45,15 @@ jobs:
           wranglerVersion: "4.152.0"
           command: deploy --config deployment/profile-service/wrangler.jsonc --keep-vars
       - name: Verify production revision
+        if: steps.permission.outputs.configured == 'true'
         run: |
           python3 - <<'PY'
           import json, urllib.request
           with urllib.request.urlopen('https://nivo-api.jonasneubauer94.workers.dev/health', timeout=30) as response:
               data=json.load(response)
-          assert data.get('revision')=='public-profiles-3', data
+          assert data.get('revision')=='public-profiles-4', data
           assert data.get('cosmetics')==1, data
+          assert data.get('statistics')==1, data
           assert data.get('registration')=='minecraft-verified', data
           assert data.get('verifier')=='supabase', data
           print('Public profile service is healthy; Minecraft proof remains required.')

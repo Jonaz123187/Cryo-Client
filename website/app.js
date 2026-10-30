@@ -166,3 +166,8 @@ copyButton.addEventListener("click", async () => {
       "Bitte die angezeigte Prüfsumme markieren und kopieren.";
   }
 });
+
+if('IntersectionObserver' in window&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+ const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('reveal-visible');observer.unobserve(entry.target);}},{threshold:.08});
+ document.querySelectorAll('.feature-section,.community,.development,.download-section').forEach(el=>{el.classList.add('reveal-ready');observer.observe(el);});
+}

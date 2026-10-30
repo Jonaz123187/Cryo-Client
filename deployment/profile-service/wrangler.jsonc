@@ -3,6 +3,19 @@
   "main": "worker.mjs",
   "compatibility_date": "2026-10-25",
   "workers_dev": true,
-  "triggers": { "crons": ["*/15 * * * *"] },
-  "d1_databases": [{ "binding": "DB", "database_name": "nivo-profiles", "database_id": "305ae680-085f-4705-8510-f2936ae9b43f" }]
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nivo-profiles",
+      "database_id": "305ae680-085f-4705-8510-f2936ae9b43f"
+    }
+  ],
+  "vars": {
+    "STATS_OWNER_UUID": "a69f5d234bd04db8a416d50d6f82baa2"
+  }
 }

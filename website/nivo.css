@@ -96,3 +96,13 @@
 /* Current public demo navigation; neutral instance examples only. */
 .preview-sidebar .preview-nav { padding-block: 6px; }
 .preview-sidebar .instance-label { margin-top: 16px; }
+
+/* Current launcher image and calmer transitions, with no layout jump on feature changes. */
+.product-screenshot{display:block;overflow:hidden;border:1px solid #ffffff20;border-radius:15px;background:#0b1018;box-shadow:0 30px 90px #0008;transition:transform 220ms ease,border-color 220ms ease}
+.product-screenshot img{display:block;width:100%;height:auto}.product-screenshot:hover{transform:translateY(-3px);border-color:#85b6ff66}
+.feature-panel{min-height:430px}.button,.feature-tab{transition:background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease,transform 160ms ease}.community{scroll-margin-top:90px}
+.reveal-ready{opacity:0;transform:translateY(12px);transition:opacity 480ms ease,transform 480ms ease}.reveal-ready.reveal-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.product-screenshot,.button,.feature-tab,.reveal-ready{transition:none;transform:none}.reveal-ready{opacity:1}}
+@media(max-width:700px){.feature-panel{min-height:500px}}
+
+.product-screenshot{border-radius:20px}.product-screenshot img{width:calc(100% + 8px);max-width:none;margin-left:-8px}

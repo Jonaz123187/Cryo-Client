@@ -1,19 +1,10 @@
+const capture=(image,caption)=>`<figure class="product-capture"><img src="/assets/${image}" alt="${caption}" loading="lazy"><figcaption>${caption}</figcaption></figure>`;
 const featureContent = {
-  instances: {
-    breadcrumb: "BIBLIOTHEK / INSTANZEN",
-    footer: "Jede Instanz behält ihre eigene Modauswahl.",
-    html: '<h3>Mehrere Instanzen verwalten</h3><p class="panel-description">Lege Version und Modloader pro Instanz fest. Mods und Konfigurationen bleiben getrennt.</p><div class="instance-row"><img class="instance-thumbnail" src="/assets/overworld.webp" alt=""><span><strong>Survival</strong><small>Fabric · 1.21.1 · Nivo Essentials</small></span><span class="tag">17 MODS</span></div><div class="instance-row"><img class="instance-thumbnail" src="/assets/cherry-grove.webp" alt=""><span><strong>Server-Modpack</strong><small>Fabric · 1.20.1 · Eigene Modauswahl</small></span><span class="tag">MODPACK</span></div><div class="instance-row"><img class="instance-thumbnail" src="/assets/alpine-dusk.webp" alt=""><span><strong>Vanilla</strong><small>Minecraft · Ohne zusätzliche Mods</small></span><span class="tag">VANILLA</span></div>',
-  },
-  mods: {
-    breadcrumb: "ENTDECKEN / MODRINTH",
-    footer: "Passende Versionen und erforderliche Abhängigkeiten.",
-    html: '<h3>Mods direkt über Modrinth finden</h3><p class="panel-description">Suche Mods, Shader und Ressourcenpakete für deine Instanz oder importiere ein Modrinth-Modpack.</p><div class="mod-row"><i class="mod-symbol">S</i><span><strong>Sodium</strong><small>Rendering & Performance</small></span><svg><use href="#i-check"/></svg></div><div class="mod-row"><i class="mod-symbol">I</i><span><strong>Iris</strong><small>Shader-Unterstützung</small></span><svg><use href="#i-check"/></svg></div><div class="mod-row"><i class="mod-symbol">L</i><span><strong>Lithium</strong><small>Spieloptimierungen</small></span><svg><use href="#i-check"/></svg></div>',
-  },
-  essentials: {
-    breadcrumb: "INSTANZ ERSTELLEN / NIVO ESSENTIALS",
-    footer: "Die Auswahl hängt von Minecraft-Version und Modloader ab.",
-    html: '<h3>Performance-Mods als Startpunkt</h3><p class="panel-description">Nivo Essentials ist eine optionale Auswahl aus Performance- und Komfortmods für neue Instanzen.</p><div class="preset-chips"><span>Sodium</span><span>Iris</span><span>Lithium</span><span>Fabric API</span><span>Entity Culling</span><span>FerriteCore</span><span>Mod Menu</span><span>ImmediatelyFast</span></div><div class="preset-toggle"><span>Nivo Essentials bei der Instanzerstellung</span><i class="decorative-switch" aria-hidden="true"></i></div><p class="panel-description" style="margin-top:17px;margin-bottom:0">Du wählst aus, was dabei sein soll. Nivo sucht passende Versionen und lädt erforderliche Abhängigkeiten mit.</p>',
-  },
+ instances:{breadcrumb:"BIBLIOTHEK / INSTANZEN",footer:"Eigene Minecraft-Versionen und getrennte Mods.",html:capture("instance-081.png","Echte Instanzansicht mit neutralen Beispieldaten.")},
+ mods:{breadcrumb:"INHALTE / MODRINTH",footer:"Passend zu Minecraft-Version und Modloader.",html:capture("mods-081.png","Mods direkt im Launcher entdecken und installieren.")},
+ essentials:{breadcrumb:"INSTANZEN / NIVO ESSENTIALS",footer:"Optionales Mod-Paket und eigene Mod-Presets.",html:capture("essentials-081.png","Nivo Essentials bei der Instanzerstellung auswählen.")},
+ banners:{breadcrumb:"PROFIL / BANNER",footer:"Eigene Bilder hochladen. Andere Nivo-Spieler sehen dein Cape.",html:capture("banner-081.png","Lade dein eigenes Bild hoch und trage es als Cape. Alle anderen Spieler mit passendem Nivo Client sehen dein ausgewähltes Banner nach dem automatischen Profilabgleich.")},
+ ingame:{breadcrumb:"MINECRAFT / NIVO-MENÜ",footer:"Mit Right Shift öffnen. Fabric 26.3, 26.2 und 1.21.11.",html:capture("ingame-081.png","Das überarbeitete Nivo-Menü direkt im Spiel.")}
 };
 
 const tabs = [...document.querySelectorAll("[data-feature]")];
@@ -107,13 +98,13 @@ function refreshRelease() {
       )
         throw new Error("Ungültiger Release");
       release = data;
-      checksum.textContent = data.sha256;
+      checksum.textContent = data.bootstrap?.sha256 ?? data.sha256;
       copyButton.disabled = false;
       document.querySelectorAll("[data-release-version]").forEach((node) => {
         node.textContent = data.version;
       });
       document.querySelector("#download-size").textContent =
-        `${(data.bytes / 1024 / 1024).toLocaleString("de-DE", { maximumFractionDigits: 1 })} MB · Version ${data.version}`;
+        `${((data.bootstrap?.bytes ?? data.bytes) / 1024 / 1024).toLocaleString("de-DE", { maximumFractionDigits: 1 })} MB · Version ${data.version}`;
       const list = document.querySelector("#release-highlights");
       const highlights = Array.isArray(data.highlights)
         ? data.highlights
@@ -128,6 +119,10 @@ function refreshRelease() {
         }),
       );
       list.parentElement.hidden = !highlights.length;
+      const overview=document.querySelector("#latest-release-notes");
+      if(overview)overview.replaceChildren(...highlights.map(text=>{const li=document.createElement("li");li.textContent=text;return li;}));
+      const date=document.querySelector("#release-date");
+      if(date&&data.publishedAt&&!Number.isNaN(Date.parse(data.publishedAt)))date.textContent=new Date(data.publishedAt).toLocaleDateString("de-DE",{day:"numeric",month:"long",year:"numeric"});
     } catch {
       checksum.textContent = "Prüfsumme momentan nicht verfügbar.";
     } finally {
@@ -159,7 +154,7 @@ copyButton.addEventListener("click", async () => {
     return;
   }
   try {
-    await navigator.clipboard.writeText(release.sha256);
+    await navigator.clipboard.writeText(release.bootstrap?.sha256 ?? release.sha256);
     status.textContent = "Prüfsumme kopiert.";
   } catch {
     status.textContent =

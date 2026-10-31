@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 import unittest
+from unittest import mock
 from pathlib import Path
 import tempfile
 import zipfile
@@ -25,6 +26,31 @@ def archive(extra=None):
 
 
 class DeploymentTests(unittest.TestCase):
+    def test_pinned_starter_is_independent_of_versioned_installer(self):
+        _, manifest, feed, installer = self.metadata_archive()
+        starter = b"MZ-stable-installer-fixture"
+        pinned = {"file":"/downloads/Nivo-Client-Setup.exe", "url":"https://github.com/Jonaz123187/Nivo-Client/releases/download/v0.8.1/Nivo-Installer-v1.exe", "sha256":hashlib.sha256(starter).hexdigest(), "bytes":len(starter), "version":"1.0.0"}
+        manifest["bootstrap"] = pinned
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "deployment").mkdir()
+            (root / "deployment/installer-starter.json").write_text(json.dumps(pinned), encoding="utf-8")
+            output = root / "out"
+            (output / "downloads").mkdir(parents=True)
+            (output / "updates").mkdir()
+            (output / "release.json").write_text(json.dumps(manifest), encoding="utf-8")
+            (output / "updates/latest.json").write_text(json.dumps(feed), encoding="utf-8")
+            (output / manifest["file"].lstrip("/")).write_bytes(installer)
+            stable = output / "downloads/Nivo-Client-Setup.exe"
+            stable.write_bytes(starter + b"modified")
+            with mock.patch("prepare_pages.ROOT", root):
+                with self.assertRaises(ValueError): externalize(output)
+                stable.write_bytes(starter)
+                externalize(output)
+            routes = (output / "_redirects").read_text(encoding="utf-8")
+            self.assertIn("/downloads/Nivo-Client-Setup.exe " + pinned["url"] + " 302", routes)
+            self.assertIn("/downloads/Nivo-Client-0.4.1-Setup.exe https://github.com/Jonaz123187/Nivo-Client/releases/download/v0.4.1/Nivo-Client-0.4.1-Setup.exe 302", routes)
+
     def test_valid_archive_and_expected_tag(self):
         self.assertEqual(from_archive(archive(),"0.4.1")[0]["version"],"0.4.1")
         with self.assertRaises(ValueError):from_archive(archive(),"0.4.2")

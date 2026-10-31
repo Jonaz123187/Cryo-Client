@@ -19,7 +19,7 @@ import urllib.request
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-ORIGIN = "https://nivo-client.pages.dev"
+ORIGIN = "https://nivo-client.de"
 LEGACY_ORIGIN = "https://cryo-client.pages.dev"
 REPOSITORY = "Jonaz123187/Nivo-Client"
 MAX_FILE = 25 * 1024 * 1024
@@ -32,7 +32,7 @@ class SafeRedirect(urllib.request.HTTPRedirectHandler):
         target = urllib.parse.urlsplit(newurl)
         if target.scheme != "https" or target.hostname not in {
             "github.com", "api.github.com", "release-assets.githubusercontent.com",
-            "objects.githubusercontent.com", "cryo-client.pages.dev", "nivo-client.pages.dev",
+            "objects.githubusercontent.com", "cryo-client.pages.dev", "nivo-client.pages.dev", "nivo-client.de",
         }:
             raise ValueError("Unsupported download redirect")
         result = super().redirect_request(req, fp, code, msg, headers, newurl)
@@ -77,7 +77,7 @@ def validate_release(manifest, feed, installer, expected_version=None):
     if not isinstance(checksum, str) or not re.fullmatch(r"[a-f0-9]{64}", checksum) or hashlib.sha256(installer).hexdigest() != checksum:
         raise ValueError("Installer SHA-256 mismatch")
     windows = feed.get("platforms", {}).get("windows-x86_64", {})
-    if feed.get("version") != version or windows.get("url") not in {ORIGIN + "/" + relative, LEGACY_ORIGIN + "/" + relative}:
+    if feed.get("version") != version or windows.get("url") not in {ORIGIN + "/" + relative, "https://nivo-client.pages.dev/" + relative, LEGACY_ORIGIN + "/" + relative}:
         raise ValueError("Update feed does not match the release")
     signature = windows.get("signature", "")
     if not isinstance(signature, str) or len(signature) > 4096 or not re.fullmatch(r"[A-Za-z0-9+/=]+", signature):
@@ -175,7 +175,7 @@ def bootstrap():
 def render_html(source, manifest, output):
     version = manifest["version"]
     result = re.sub(r'(<[^>]*\bdata-release-version(?:="[^"]*")?[^>]*>)[^<]*', lambda match: match[1] + version, source)
-    display_size = f'{manifest["bytes"] / 1048576:.1f}'.replace(".", ",")
+    display_size = f'{manifest.get("bootstrap", manifest)["bytes"] / 1048576:.1f}'.replace(".", ",")
     result = re.sub(r'(<[^>]*\bid="download-size"[^>]*>)[^<]*', lambda match: match[1] + f"{display_size} MB · Version {version}", result)
     items = "".join("<li>" + html.escape(text) + "</li>" for text in manifest.get("highlights", []))
     result = re.sub(r'(<ul[^>]*\bid="release-highlights"[^>]*>).*?(</ul>)', lambda match: match[1] + items + match[2], result, flags=re.S)
@@ -215,7 +215,17 @@ def build(output, payload):
     (output / "downloads").mkdir(exist_ok=True)
     (output / "updates").mkdir(exist_ok=True)
     (output / relative).write_bytes(installer)
-    (output / "downloads/Nivo-Client-Setup.exe").write_bytes(installer)
+    starter = manifest.get("bootstrap")
+    if starter:
+        pinned = json.loads((ROOT / "deployment/installer-starter.json").read_text(encoding="utf-8"))
+        if starter != pinned:
+            raise ValueError("Installer starter does not match the trusted pin")
+        binary = fetch(pinned["url"], MAX_FILE)
+        if len(binary) != pinned["bytes"] or hashlib.sha256(binary).hexdigest() != pinned["sha256"]:
+            raise ValueError("Installer starter hash mismatch")
+        (output / "downloads/Nivo-Client-Setup.exe").write_bytes(binary)
+    else:
+        (output / "downloads/Nivo-Client-Setup.exe").write_bytes(installer)
     (output / "release.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "updates/latest.json").write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     page = output / "index.html"
@@ -236,14 +246,19 @@ def externalize(output):
         raise ValueError("Unsafe installer path")
     installer = target.read_bytes()
     relative = validate_release(manifest, feed, installer)
-    if stable.read_bytes() != installer:
+    starter = manifest.get("bootstrap")
+    if starter:
+        pinned = json.loads((ROOT / "deployment/installer-starter.json").read_text(encoding="utf-8"))
+        if starter != pinned or hashlib.sha256(stable.read_bytes()).hexdigest() != pinned["sha256"] or stable.stat().st_size != pinned["bytes"]:
+            raise ValueError("Stable starter differs from trusted pin")
+    elif stable.read_bytes() != installer:
         raise ValueError("Stable installer differs from the verified file")
     url = f"https://github.com/{REPOSITORY}/releases/download/v{version}/Nivo-Client-{version}-Setup.exe"
     redirects = output / "_redirects"
     text = redirects.read_text(encoding="utf-8") if redirects.exists() else ""
     routes = {"/" + relative, "/downloads/Nivo-Client-Setup.exe"}
     text = "\n".join(line for line in text.splitlines() if not line.split() or line.split()[0] not in routes)
-    redirects.write_text(text.rstrip() + "\n" + "\n".join(f"{route} {url} 302" for route in sorted(routes)) + "\n", encoding="utf-8")
+    redirects.write_text(text.rstrip() + "\n" + "\n".join(f"{route} {starter['url'] if starter and route == '/downloads/Nivo-Client-Setup.exe' else url} 302" for route in sorted(routes)) + "\n", encoding="utf-8")
     target.unlink()
     stable.unlink()
     for path in output.rglob("*"):

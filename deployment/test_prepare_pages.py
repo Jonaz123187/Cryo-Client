@@ -27,7 +27,7 @@ def archive(extra=None):
 
 class DeploymentTests(unittest.TestCase):
     def test_pinned_starter_is_independent_of_versioned_installer(self):
-        _, manifest, feed, installer = self.metadata_archive()
+        manifest, feed, installer = payload()
         starter = b"MZ-stable-installer-fixture"
         pinned = {"file":"/downloads/Nivo-Client-Setup.exe", "url":"https://github.com/Jonaz123187/Nivo-Client/releases/download/v0.8.1/Nivo-Installer-v1.exe", "sha256":hashlib.sha256(starter).hexdigest(), "bytes":len(starter), "version":"1.0.0"}
         manifest["bootstrap"] = pinned
@@ -107,7 +107,7 @@ class ExternalInstallerTests(unittest.TestCase):
         self.assertEqual(len(versions), 1)
 
     def test_externalize_keeps_only_fixed_repository_download_redirects(self):
-        _, manifest, feed, installer = self.metadata_archive()
+        manifest, feed, installer = payload()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "downloads").mkdir()
@@ -135,3 +135,4 @@ class ExternalInstallerTests(unittest.TestCase):
 
 
 if __name__ == "__main__":unittest.main()
+
